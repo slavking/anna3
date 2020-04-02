@@ -1,8 +1,8 @@
 __pycache__/
 *.pyc
-#*.png
-#*.jpg
-#*.jpeg
+*.png
+*.jpg
+*.jpeg
 config.py
 *.swp
 *.txt
