@@ -391,8 +391,9 @@ async def wa(query):
 async def wiki(query):
     'wikipedia'
     try:
-        # out_message = wikipedia.summary(t.group(2), sentences=30)
-        out_message = wikipedia.WikipediaPage(query).content
+        #out_message = wikipedia.summary(t.group(2), sentences=30)
+        #out_message = wikipedia.WikipediaPage(query).content
+        out_message = wikipedia.WikipediaPage(wikipedia.search(query)[0]).content
     except wikipedia.DisambiguationError as e:
         out_message = str(e)
     return out_message
