@@ -390,6 +390,15 @@ async def wa(query):
 @command(regex=r'\.(?:w|wiki)\s(.+)', command_name='wiki')
 async def wiki(query):
     'wikipedia'
+    if query.startswith('-'):
+        lang, search = query.split(None, 1)
+        lang = lang[1:]
+        try:
+            wikipedia.set_lang(lang)
+            out_message = wikipedia.WikipediaPage(wikipedia.search(search)[0]).content
+        except wikipedia.DisambiguationError as e:
+            out_message = str(e)
+
     try:
         #out_message = wikipedia.summary(t.group(2), sentences=30)
         #out_message = wikipedia.WikipediaPage(query).content
