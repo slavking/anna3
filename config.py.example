@@ -1,0 +1,16 @@
+# coding: utf-8
+password_livechan = 'anna_no_limit_cookie1'
+url = 'kotchan.fun'
+wolframAPI = 'REDACTED'
+bot_trip_encoded = 'REDACTED'
+bot_name = 'anna'
+bot_trip = 'ananas'
+error_message = 'You want shit? Idiot'
+weather_key = 'REDACTED'
+yandex_translate_key = 'REDACTED'
+cleverbot_user = 'REDACTED'
+cleverbot_key = 'REDACTED'
+#url = 'kotchan.org'
+board = 'int'
+poll_interval = 1
+avatar_folder = 'avatars/'

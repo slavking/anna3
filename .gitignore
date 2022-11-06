@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.png
+*.jpg
+*.jpeg
+config.py
+*.swp
+*.txt
+!requirements.txt
+*.webm
+.idea/*
+tmp/

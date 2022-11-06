@@ -1,0 +1,14 @@
+image: atlassian/default-image:2
+pipelines:
+  default:
+     - step:
+        deployment: production
+        script:
+            - pipe: atlassian/ssh-run:0.2.2
+              variables:
+                SSH_USER: 'ph'
+                SERVER: 'kotchan.org'
+                PORT: 666
+                SSH_KEY: $SSH_KEY
+                MODE: 'command'
+                COMMAND: 'sh -c "cd /home/ph/anna3 && git checkout -f && git pull && supervisorctl restart map"' # path to a script in your repository
