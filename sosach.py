@@ -12,7 +12,7 @@ NOWORDS = []
 
 async def get_json(url):
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as s:
+        async with session.get(url, verify_ssl=False) as s:
             if s.status != 200:
                 return None
             return await s.json()
@@ -43,7 +43,8 @@ async def files(board, num):
     res = []
     posts = tr['threads'][0]['posts']
     for post in posts:
-        for f in post.get('files', []):
+        posts = post.get('files') or []
+        for f in posts:
             if f['path'].endswith('mp4') or f['path'].endswith('webm'):
                 res.append((f.get('fullname', 'video'), 'https://2ch.hk/%s/res/%s.html#%s' % (board, num, post['num']), urljoin('https://2ch.hk/',f['path'])))
     return res

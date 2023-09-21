@@ -2,6 +2,7 @@
 import re
 import os
 import random
+import tempfile
 import config
 import aiohttp
 import json
@@ -12,9 +13,12 @@ from urllib.parse import urljoin
 import aiosqlite
 import sosach
 import urbandict
+import feedparser
 import wolframalpha
 import wikipedia
 from yandex_translate import YandexTranslate
+from pysychonaut import PsychonautWiki
+from tabulate import tabulate
 import gtts
 from cowpy import cow
 from game import Game
@@ -357,16 +361,6 @@ async def lurkers(arg):
     return os.popen('python ../lurkers.py | sort').read()
 
 
-@command
-async def urban(query):
-    'Urban directory'
-    res = ''
-    for l in urbandict.define(query):
-        res += "def: %s\nexample: %s\n" % (l['def'].strip(), l['example'].strip())
-    return res or "Didn't find anything"
-
-
-@command(to_convo='hangman', from_convo='hangman', pass_data=True)
 async def play(data, arg):
     'Hangman game'
     return game.play(arg, data['identifier'], data['name'], data['country'])
@@ -406,6 +400,43 @@ async def wiki(query):
     except wikipedia.DisambiguationError as e:
         out_message = str(e)
     return out_message
+
+@command
+async def psy(query):
+    'psychonaute'
+    res_dict=PsychonautWiki().search_psychonaut_wiki(query)["substances"][0]
+    res_msg='[b]'+res_dict["name"]+'[/b]\n'
+
+    def table2msg(table):
+        i=0;tab=[]
+        for value in table:
+            if isinstance(table[value],dict):
+                tmp_table=[str(value),str(table[value]["min"])
+                    +' to '+str(table[value]["max"])]
+                if "units" in table[value]:
+                    tmp_table[1]+=(' '+str(table[value]["units"]))
+                tab.append(tmp_table)
+            else:
+                tab.append([str(value),str(table[value])])
+            
+        t_tab=[list(i) for i in zip(*tab)]
+        return '[code]'+tabulate(t_tab)+'[/code]\n'
+    
+    def part2msg(res_dict,name,dict_name):
+        if dict_name in res_dict["roas"][0]:
+            return '[i]'+name+'[/i]\n'+table2msg(res_dict["roas"][0][dict_name])
+    
+    res_msg+=part2msg(res_dict,"Dosage","dose")
+    res_msg+=part2msg(res_dict,"Duration","duration")
+#    res_msg+=part2msg(res_dict,"Bioavailability","bioavailability")
+    
+    res_msg+='[i]Effects[/i]' + '\n'
+    res_msg+=res_dict["effects"][1]["name"]
+    for i in range(2,len(res_dict["effects"])):
+        res_msg+=', ' + (res_dict["effects"][i]["name"])
+    
+    res_msg+='.\n'
+    return res_msg or "Didn't find anything"
 
 
 @command
@@ -581,3 +612,51 @@ async def cowsay(arg):
         _cow = 'www'
 
     return '[code]{}[/code]'.format(cow.COWACTERS[_cow]().milk(text))
+
+@command
+async def rt(arg):
+    async with aiohttp.ClientSession() as session:
+        async with session.get('https://www.rt.com/rss/russia/') as resp:
+            rss = await resp.text()
+            rss = feedparser.parse(rss)
+            e = random.choice(rss['entries'])
+            body = BeautifulSoup(e['summary'], 'html.parser').text.split('Read Full')[0] + '\n' + e['link'].split('?')[0] + '\n' + BeautifulSoup(e['content'][0]['value'], 'html.parser').text.split('Read more')[0]
+            return body
+
+@command
+async def urban(arg):
+    async with aiohttp.ClientSession() as session:
+        async with session.get('http://api.urbandictionary.com/v0/define?term=%s' % arg, verify_ssl=False) as resp:
+            res = await resp.json()
+            res = random.choice(res['list']) #[0]
+            return res['definition'] + '\n' + res.get('example', '')
+
+war_seen = set()
+
+@command
+async def wm(arg):
+    async with aiohttp.ClientSession() as session:
+        async with session.get('https://2ch.hk/wm/res/3892965.json', verify_ssl=False) as resp:
+            res = await resp.json()
+            files = []
+            for p in res['threads'][0]['posts']:
+                for f in p.get('files', []):
+                    f = f['path']
+                    if f.endswith('webm') or f.endswith('mp4'):
+                        files.append(f'https://2ch.hk/{f}')
+        f = random.choice(files)
+        while f in war_seen:
+            f = random.choice(files)
+            #files.remove(f)
+        war_seen.add(f)
+
+        _ext = os.path.splitext(f)[1]
+        _fd, _path = tempfile.mkstemp(prefix='video_', suffix=_ext)
+        os.close(_fd)
+        img = _path
+        async with session.get(f, verify_ssl=False) as s:
+            filedata = await s.read()
+            with open(img, 'wb') as out_file:
+                out_file.write(filedata)
+        return '', img
+

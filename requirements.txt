@@ -25,3 +25,4 @@ wolframalpha==3.0.1
 xmltodict==0.12.0
 yandex.translate==0.3.5
 yarl==1.3.0
+pusher
