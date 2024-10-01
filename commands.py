@@ -168,11 +168,17 @@ async def reddit(subreddit=None):
 @command
 async def bible(arg):
     'Bible quote'
-    async with aiohttp.ClientSession() as sess:
-        async with sess.get('http://labs.bible.org/api/?passage=random') as s:
-            res = await s.text()
-        res = res.replace('<', '[').replace('>', ']')
-        return res
+    # random.choice(json.load(open('lenin.json')))
+    if not arg:
+        with open('kjv.json') as bible:
+               return random.choice(json.load(bible))
+
+
+#   async with aiohttp.ClientSession() as sess:
+#       async with sess.get('http://labs.bible.org/api/?passage=random') as s:
+#           res = await s.text()
+#       res = res.replace('<', '[').replace('>', ']')
+#       return res
 
 
 @command
